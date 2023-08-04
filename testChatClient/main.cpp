@@ -28,9 +28,14 @@ public:
 	}
 	
 	void read() {
-		boost::asio::async_read(socket_, boost::asio::buffer(readBuff_, 32), [this](boost::system::error_code ec, size_t bytesTransferred) {
+		boost::asio::async_read_until(socket_, buff_, '\n',
+																	[this](boost::system::error_code ec, size_t bytesTransferred) {
 			if (!ec) {
-				std::cout << "reading " << std::endl;
+				std::istream is(&buff_);
+				std::string line;
+				std::getline(is, line);
+				std::cout << "read success : " << line << std::endl;
+				read();
 			}
 			else {
 				std::cerr << "error in reading" << std::endl;
@@ -59,7 +64,7 @@ public:
 private:
 	tcp::socket socket_;
 	boost::asio::io_context& io_context_;
-	char* readBuff_;
+	boost::asio::streambuf buff_;
 	std::atomic<bool> connected_{false};
 };
 
