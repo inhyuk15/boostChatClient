@@ -8,7 +8,8 @@ constexpr int BUFF_SIZE = 32;
 
 class Client {
 public:
-	Client(boost::asio::io_context& io_context, tcp::resolver::results_type& endpoints): io_context_(io_context), socket_(io_context) {
+	Client(boost::asio::io_context& io_context, tcp::resolver::results_type& endpoints,
+				 std::string nickname): io_context_(io_context), socket_(io_context), nickname_(nickname) {
 		connect(endpoints);
 	}
 	
@@ -19,7 +20,7 @@ public:
 	void write(const char* writeBuff) {
 		boost::asio::async_write(socket_, boost::asio::buffer(writeBuff, std::strlen(writeBuff)), [this](boost::system::error_code ec, size_t byteTransferred) {
 			if (!ec) {
-				std::cout << "write sucesss, transferred : " << byteTransferred << "bytes" << std::endl;
+//				std::cout << "write sucesss, transferred : " << byteTransferred << "bytes" << std::endl;
 			} else {
 				std::cerr << "error in writing " << ec.message() << std::endl;
 				socket_.close();
@@ -34,7 +35,7 @@ public:
 				std::istream is(&buff_);
 				std::string line;
 				std::getline(is, line);
-				std::cout << "read success : " << line << std::endl;
+				std::cout << line << std::endl;
 				read();
 			}
 			else {
@@ -48,6 +49,10 @@ public:
 		boost::asio::async_connect(socket_, endpoints, [this](boost::system::error_code ec, tcp::endpoint) {
 			if (!ec) {
 				std::cout << "connection success! " << std::endl;
+				
+				std::string sendNickname = nickname_ + "\n";
+				write(sendNickname.c_str());
+				
 				connected_.store(true);
 				read();
 			} else {
@@ -66,6 +71,8 @@ private:
 	boost::asio::io_context& io_context_;
 	boost::asio::streambuf buff_;
 	std::atomic<bool> connected_{false};
+	
+	std::string nickname_;
 };
 
 
@@ -77,22 +84,29 @@ int main(int argc, const char * argv[]) {
 		boost::asio::io_context io_context;
 		tcp::resolver resolver(io_context);
 		auto endpoints = resolver.resolve(host, port);
-		Client client(io_context, endpoints);
 		
-		std::thread t([&io_context]() {io_context.run();});
 		
-		while(!client.isConnected()) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		}
+		std::cout << "Enter your nickname : ";
+		std::string nickname;
+		std::getline(std::cin, nickname);
 		
-		while(true) {
-			std::cout << "write msg ";
-			char writeBuff[BUFF_SIZE];
-			std::cin.getline(writeBuff, BUFF_SIZE);
-			std::strcat(writeBuff, "\n");
-			client.write(writeBuff);
-		}
+		Client client(io_context, endpoints, nickname);
 		
+		std::thread t([&client]() {
+			while(!client.isConnected()) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+			
+			while(true) {
+//				std::cout << "write msg ";
+				char writeBuff[BUFF_SIZE];
+				std::cin.getline(writeBuff, BUFF_SIZE);
+				std::strcat(writeBuff, "\n");
+				client.write(writeBuff);
+			}
+		});
+		
+		io_context.run();
 		client.close();
 		t.join();
 		
