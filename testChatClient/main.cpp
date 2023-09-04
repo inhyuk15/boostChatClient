@@ -52,7 +52,7 @@ public:
 		boost::asio::async_read(socket_, boost::asio::buffer(&networkDataSize, sizeof(networkDataSize)),
 														[this, networkDataSize](boost::system::error_code ec, std::size_t) {
 			if (!ec) {
-				doRead(networkDataSize);
+				doRead(ntohl(networkDataSize));
 			}
 			else {
 				std::cerr << "error in reading header " << std::endl;
@@ -91,10 +91,6 @@ public:
 		boost::asio::async_connect(socket_, endpoints, [this](boost::system::error_code ec, tcp::endpoint) {
 			if (!ec) {
 				std::cout << "connection success! " << std::endl;
-				
-//				std::string sendNickname = nickname_ + "\n";
-//				write(sendNickname.c_str());
-//
 				connected_.store(true);
 				read();
 			} else {
@@ -112,8 +108,6 @@ private:
 	tcp::socket socket_;
 	boost::asio::io_context& io_context_;
 	std::atomic<bool> connected_{false};
-	
-	std::string nickname_;
 };
 
 
@@ -139,17 +133,13 @@ int main(int argc, const char * argv[]) {
 			}
 			
 			while(true) {
-//				std::cout << "write msg ";
-				char writeBuff[BUFF_SIZE];
-				std::cin.getline(writeBuff, BUFF_SIZE);
-				std::strcat(writeBuff, "\n");
 				std::string msg;
 				std::cin >> msg;
 				
 				std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
-					 auto duration = now.time_since_epoch();
-					 uint32_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+			 auto duration = now.time_since_epoch();
+			 uint32_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 
 				ChatMessage chatMessage("para", timestamp, chat::DataType::TEXT);
 				chatMessage.setTextMessage(msg);
