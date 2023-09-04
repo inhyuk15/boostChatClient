@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		EC047FA52A5BB6C400D4FF42 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EC047FA42A5BB6C400D4FF42 /* main.cpp */; };
+		ECB02CF82AA61A33004E51FE /* chat.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = ECB02CF62AA61A33004E51FE /* chat.pb.cc */; };
+		ECB02CFC2AA61AD9004E51FE /* ChatMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ECB02CFA2AA61AD9004E51FE /* ChatMessage.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +28,10 @@
 		EC047FA12A5BB6C400D4FF42 /* testChatClient */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testChatClient; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC047FA42A5BB6C400D4FF42 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		EC759A022A6FF7ED00ED5CFF /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
+		ECB02CF62AA61A33004E51FE /* chat.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chat.pb.cc; sourceTree = "<group>"; };
+		ECB02CF72AA61A33004E51FE /* chat.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chat.pb.h; sourceTree = "<group>"; };
+		ECB02CFA2AA61AD9004E51FE /* ChatMessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ChatMessage.cpp; sourceTree = "<group>"; };
+		ECB02CFB2AA61AD9004E51FE /* ChatMessage.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ChatMessage.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +65,10 @@
 		EC047FA32A5BB6C400D4FF42 /* testChatClient */ = {
 			isa = PBXGroup;
 			children = (
+				ECB02CFA2AA61AD9004E51FE /* ChatMessage.cpp */,
+				ECB02CFB2AA61AD9004E51FE /* ChatMessage.hpp */,
+				ECB02CF62AA61A33004E51FE /* chat.pb.cc */,
+				ECB02CF72AA61A33004E51FE /* chat.pb.h */,
 				EC047FA42A5BB6C400D4FF42 /* main.cpp */,
 			);
 			path = testChatClient;
@@ -74,6 +84,7 @@
 				EC047F9D2A5BB6C400D4FF42 /* Sources */,
 				EC047F9E2A5BB6C400D4FF42 /* Frameworks */,
 				EC047F9F2A5BB6C400D4FF42 /* CopyFiles */,
+				ECB02CF92AA61A86004E51FE /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -116,11 +127,33 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		ECB02CF92AA61A86004E51FE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/Users/inhyuk/Documents/github/boost/vcpkg/installed/x64-osx/tools/protobuf/protoc --proto_path=$SRCROOT --cpp_out=$SRCROOT/testChatClient $SRCROOT/testChatClient/chat.proto\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		EC047F9D2A5BB6C400D4FF42 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ECB02CF82AA61A33004E51FE /* chat.pb.cc in Sources */,
+				ECB02CFC2AA61AD9004E51FE /* ChatMessage.cpp in Sources */,
 				EC047FA52A5BB6C400D4FF42 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -243,7 +276,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /usr/local/opt/boost/include;
+				HEADER_SEARCH_PATHS = "/Users/inhyuk/Documents/github/boost/vcpkg/installed/x64-osx/include";
+				LIBRARY_SEARCH_PATHS = "/Users/inhyuk/Documents/github/boost/vcpkg/installed/x64-osx/lib";
+				OTHER_LDFLAGS = "-lprotobuf";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -252,7 +287,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = /usr/local/opt/boost/include;
+				HEADER_SEARCH_PATHS = "/Users/inhyuk/Documents/github/boost/vcpkg/installed/x64-osx/include";
+				LIBRARY_SEARCH_PATHS = "/Users/inhyuk/Documents/github/boost/vcpkg/installed/x64-osx/lib";
+				OTHER_LDFLAGS = "-lprotobuf";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

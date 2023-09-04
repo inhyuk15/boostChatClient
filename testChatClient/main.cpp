@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <cstdlib>
+#include "ChatMessage.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -17,10 +18,27 @@ public:
 		boost::asio::post(io_context_,  [this](){ socket_.close();});
 	}
 	
-	void write(const char* writeBuff) {
-		boost::asio::async_write(socket_, boost::asio::buffer(writeBuff, std::strlen(writeBuff)), [this](boost::system::error_code ec, size_t byteTransferred) {
+	void write(const ChatMessage& chatMessage) {
+		auto sendBytes = chatMessage.encode();
+		uint32_t dataSize = static_cast<uint32_t>(sendBytes.size());
+		dataSize = htonl(dataSize);
+		
+		boost::asio::async_write(socket_, boost::asio::buffer(&dataSize, sizeof(dataSize)),
+						 [this, sendBytes](boost::system::error_code ec, size_t) {
 			if (!ec) {
-//				std::cout << "write sucesss, transferred : " << byteTransferred << "bytes" << std::endl;
+				doWrite(sendBytes);
+			}
+			else {
+				std::cerr << "error in writing header" << std::endl;
+				socket_.close();
+			}
+		});
+	}
+	
+	void doWrite(const std::string& sendBytes) {
+		boost::asio::async_write(socket_, boost::asio::buffer(sendBytes), [this](boost::system::error_code ec, size_t byteTransferred) {
+			if (!ec) {
+				std::cout << "write sucesss, transferred : " << byteTransferred << "bytes" << std::endl;
 			} else {
 				std::cerr << "error in writing " << ec.message() << std::endl;
 				socket_.close();
@@ -28,14 +46,38 @@ public:
 		});
 	}
 	
+	// read size (4 byte)
 	void read() {
-		boost::asio::async_read_until(socket_, buff_, '\n',
-																	[this](boost::system::error_code ec, size_t bytesTransferred) {
+		uint32_t networkDataSize;
+		boost::asio::async_read(socket_, boost::asio::buffer(&networkDataSize, sizeof(networkDataSize)),
+														[this, networkDataSize](boost::system::error_code ec, std::size_t) {
 			if (!ec) {
-				std::istream is(&buff_);
-				std::string line;
-				std::getline(is, line);
-				std::cout << line << std::endl;
+				doRead(networkDataSize);
+			}
+			else {
+				std::cerr << "error in reading header " << std::endl;
+				socket_.close();
+			}
+		});
+	}
+	
+	void doRead(uint32_t networkDataSize) {
+			std::string binaryData(networkDataSize, '\0');
+		boost::asio::async_read(socket_, boost::asio::buffer(binaryData),
+																	[this, binaryData](boost::system::error_code ec, size_t bytesRead) {
+			if (!ec) {
+				ChatMessage chatMessage;
+				chatMessage.decode(binaryData);
+				std::cout << "Username: " << chatMessage.getUserName() << std::endl;
+				std::cout << "Timestamp: " << chatMessage.getTimestamp()
+									<< std::endl;
+				if (chatMessage.getDataType() == chat::TEXT) {
+						std::cout << "Message: " << chatMessage.getMessageText()
+											<< std::endl;
+				} else if (chatMessage.getDataType() == chat::IMAGE) {
+						std::cout << " image" << std::endl;
+				}
+
 				read();
 			}
 			else {
@@ -50,9 +92,9 @@ public:
 			if (!ec) {
 				std::cout << "connection success! " << std::endl;
 				
-				std::string sendNickname = nickname_ + "\n";
-				write(sendNickname.c_str());
-				
+//				std::string sendNickname = nickname_ + "\n";
+//				write(sendNickname.c_str());
+//
 				connected_.store(true);
 				read();
 			} else {
@@ -69,7 +111,6 @@ public:
 private:
 	tcp::socket socket_;
 	boost::asio::io_context& io_context_;
-	boost::asio::streambuf buff_;
 	std::atomic<bool> connected_{false};
 	
 	std::string nickname_;
@@ -102,7 +143,17 @@ int main(int argc, const char * argv[]) {
 				char writeBuff[BUFF_SIZE];
 				std::cin.getline(writeBuff, BUFF_SIZE);
 				std::strcat(writeBuff, "\n");
-				client.write(writeBuff);
+				std::string msg;
+				std::cin >> msg;
+				
+				std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+
+					 auto duration = now.time_since_epoch();
+					 uint32_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+
+				ChatMessage chatMessage("para", timestamp, chat::DataType::TEXT);
+				chatMessage.setTextMessage(msg);
+				client.write(chatMessage);
 			}
 		});
 		
