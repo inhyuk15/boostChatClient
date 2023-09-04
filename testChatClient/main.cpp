@@ -10,7 +10,7 @@ constexpr int BUFF_SIZE = 32;
 class Client {
 public:
 	Client(boost::asio::io_context& io_context, tcp::resolver::results_type& endpoints,
-				 std::string nickname): io_context_(io_context), socket_(io_context), nickname_(nickname) {
+				 std::string nickname): io_context_(io_context), socket_(io_context) {
 		connect(endpoints);
 	}
 	
@@ -20,10 +20,10 @@ public:
 	
 	void write(const ChatMessage& chatMessage) {
 		auto sendBytes = chatMessage.encode();
-		uint32_t dataSize = static_cast<uint32_t>(sendBytes.size());
-		dataSize = htonl(dataSize);
+		auto dataSize = std::make_shared<uint32_t>(static_cast<uint32_t>(sendBytes.size()));
+		*dataSize = htonl(*dataSize);
 		
-		boost::asio::async_write(socket_, boost::asio::buffer(&dataSize, sizeof(dataSize)),
+		boost::asio::async_write(socket_, boost::asio::buffer(dataSize.get(), sizeof(*dataSize)),
 						 [this, sendBytes](boost::system::error_code ec, size_t) {
 			if (!ec) {
 				doWrite(sendBytes);
@@ -48,11 +48,12 @@ public:
 	
 	// read size (4 byte)
 	void read() {
-		uint32_t networkDataSize;
-		boost::asio::async_read(socket_, boost::asio::buffer(&networkDataSize, sizeof(networkDataSize)),
+		auto networkDataSize = std::make_shared<uint32_t>();
+		boost::asio::async_read(socket_, boost::asio::buffer(networkDataSize.get(), sizeof(*networkDataSize)),
 														[this, networkDataSize](boost::system::error_code ec, std::size_t) {
 			if (!ec) {
-				doRead(ntohl(networkDataSize));
+				std::cout << "ih?" << std::endl;
+				doRead(ntohl(*networkDataSize));
 			}
 			else {
 				std::cerr << "error in reading header " << std::endl;
@@ -62,12 +63,12 @@ public:
 	}
 	
 	void doRead(uint32_t networkDataSize) {
-			std::string binaryData(networkDataSize, '\0');
-		boost::asio::async_read(socket_, boost::asio::buffer(binaryData),
+			auto binaryData = std::make_shared<std::string>(networkDataSize, '\0');
+		boost::asio::async_read(socket_, boost::asio::buffer(*binaryData),
 																	[this, binaryData](boost::system::error_code ec, size_t bytesRead) {
 			if (!ec) {
 				ChatMessage chatMessage;
-				chatMessage.decode(binaryData);
+				chatMessage.decode(*binaryData);
 				std::cout << "Username: " << chatMessage.getUserName() << std::endl;
 				std::cout << "Timestamp: " << chatMessage.getTimestamp()
 									<< std::endl;
@@ -108,6 +109,7 @@ private:
 	tcp::socket socket_;
 	boost::asio::io_context& io_context_;
 	std::atomic<bool> connected_{false};
+//	uint32_t networkDataSize_;
 };
 
 
