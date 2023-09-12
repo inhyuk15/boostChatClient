@@ -2,16 +2,26 @@
 #include <boost/asio.hpp>
 #include <cstdlib>
 #include "ChatMessage.hpp"
+#include <boost/beast/websocket.hpp>
 
+namespace beast = boost::beast;
+namespace websocket = beast::websocket;
 using boost::asio::ip::tcp;
+
 
 constexpr int BUFF_SIZE = 32;
 
 class Client {
 public:
 	Client(boost::asio::io_context& io_context, tcp::resolver::results_type& endpoints,
-				 std::string nickname): io_context_(io_context), socket_(io_context) {
-		connect(endpoints);
+				 std::string nickname, bool useWebSocket): io_context_(io_context), socket_(io_context) {
+		if (useWebSocket) {
+//			ws_(socket_);
+			ws_.emplace(std::move(socket_));
+		}
+		else {
+			connect(endpoints);
+		}
 	}
 	
 	void close() {
@@ -56,7 +66,7 @@ public:
 				doRead(ntohl(*networkDataSize));
 			}
 			else {
-				std::cerr << "error in reading header " << std::endl;
+				std::cerr << "error in reading header " << ec.message() << std::endl;
 				socket_.close();
 			}
 		});
@@ -93,12 +103,28 @@ public:
 			if (!ec) {
 				std::cout << "connection success! " << std::endl;
 				connected_.store(true);
+				if (ws_.has_value()) {
+					handShake();
+				}
 				read();
 			} else {
 				std::cerr << "error in connection: " << ec.message() << std::endl;
 				socket_.close();
 			}
 		});
+	}
+	
+	void handShake() {
+		ws_->async_handshake(socket_.local_endpoint().address().to_string(), "/",
+														[this](boost::system::error_code ec) {
+																if (!ec) {
+																		std::cout << "WebSocket handshake success!" << std::endl;
+																		read();
+																} else {
+																		std::cerr << "WebSocket handshake error: " << ec.message() << std::endl;
+																		socket_.close();
+																}
+														});
 	}
 	
 	bool isConnected() const {
@@ -109,14 +135,30 @@ private:
 	tcp::socket socket_;
 	boost::asio::io_context& io_context_;
 	std::atomic<bool> connected_{false};
-//	uint32_t networkDataSize_;
+//	boost::beast::websocket::stream<tcp::socket> ws_;
+	boost::optional<boost::beast::websocket::stream<tcp::socket>> ws_;
+
 };
 
 
 int main(int argc, const char * argv[]) {
 	try {
-		std::string port = "4000";
+		if (argc < 2) {
+				std::cerr << "Usage: " << argv[0] << " [tcp|ws]" << std::endl;
+				return 1;
+		}
+		
 		std::string host = "localhost";
+		std::string port;
+		std::string mode = argv[1];
+		if (mode == "tcp") {
+				port = "4000";
+		} else if (mode == "ws") {
+				port = "4001";
+		} else {
+				std::cerr << "Invalid mode. Use 'tcp' or 'ws'." << std::endl;
+				return 1;
+		}
 		
 		boost::asio::io_context io_context;
 		tcp::resolver resolver(io_context);
@@ -127,9 +169,9 @@ int main(int argc, const char * argv[]) {
 		std::string nickname;
 		std::getline(std::cin, nickname);
 		
-		Client client(io_context, endpoints, nickname);
+		Client client(io_context, endpoints, nickname, mode == "ws");
 		
-		std::thread t([&client]() {
+		std::thread t([&client, nickname]() {
 			while(!client.isConnected()) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			}
@@ -143,7 +185,7 @@ int main(int argc, const char * argv[]) {
 			 auto duration = now.time_since_epoch();
 			 uint32_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 
-				ChatMessage chatMessage("para", timestamp, chat::DataType::TEXT);
+				ChatMessage chatMessage(nickname, timestamp, chat::DataType::TEXT);
 				chatMessage.setTextMessage(msg);
 				client.write(chatMessage);
 			}
