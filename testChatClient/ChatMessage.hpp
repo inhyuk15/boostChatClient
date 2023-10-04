@@ -20,7 +20,7 @@ public:
 
 		std::string getMessageText() const;
 		std::vector<uint8_t> getImageData() const;
-		std::string getImageExtension() const;
+		std::string getFileExtension() const;
 
 private:
 		chat::ChatMessage message_;

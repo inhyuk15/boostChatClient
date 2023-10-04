@@ -44,6 +44,6 @@ std::vector<uint8_t> ChatMessage::getImageData() const {
 																message_.image_data().end());
 }
 
-std::string ChatMessage::getImageExtension() const {
+std::string ChatMessage::getFileExtension() const {
 		return message_.image_extension();
 }
