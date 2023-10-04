@@ -10,13 +10,16 @@ public:
 
 		void setTextMessage(const std::string& messageText);
 		void setImageMessage(const std::string& imageExtension, const std::vector<uint8_t>& imageData);
-
+		void setDataType(chat::DataType dataType);
+		void setSystemCode(chat::SystemCode systemCode);
+	
 		std::string encode() const;
 		void decode(const std::string& input);
 
 		std::string getUserName() const;
 		uint32_t getTimestamp() const;
 		chat::DataType getDataType() const;
+		chat::SystemCode getSystemCode() const;
 
 		std::string getMessageText() const;
 		std::vector<uint8_t> getImageData() const;

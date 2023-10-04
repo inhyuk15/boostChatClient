@@ -15,8 +15,16 @@ void ChatMessage::setTextMessage(const std::string& messageText) {
 
 void ChatMessage::setImageMessage(const std::string& imageExtension,
 																	const std::vector<uint8_t>& imageData) {
-		message_.set_image_extension(imageExtension);
+		message_.set_file_extension(imageExtension);
 		message_.set_image_data(imageData.data(), imageData.size());
+}
+
+void ChatMessage::setDataType(chat::DataType dataType) {
+	message_.set_data_type(dataType);
+}
+
+void ChatMessage::setSystemCode(chat::SystemCode systemCode) {
+	message_.set_system_code(systemCode);
 }
 
 std::string ChatMessage::encode() const {
@@ -35,6 +43,8 @@ uint32_t ChatMessage::getTimestamp() const { return message_.timestamp(); }
 
 chat::DataType ChatMessage::getDataType() const { return message_.data_type(); }
 
+chat::SystemCode ChatMessage::getSystemCode() const { return message_.system_code(); }
+
 std::string ChatMessage::getMessageText() const {
 		return message_.message_text();
 }
@@ -45,5 +55,5 @@ std::vector<uint8_t> ChatMessage::getImageData() const {
 }
 
 std::string ChatMessage::getFileExtension() const {
-		return message_.image_extension();
+		return message_.file_extension();
 }

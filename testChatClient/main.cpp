@@ -7,6 +7,12 @@ using boost::asio::ip::tcp;
 
 constexpr int BUFF_SIZE = 32;
 
+uint32_t getCurrentTimeStamp() {
+	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+	auto duration = now.time_since_epoch();
+	return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+}
+
 class Client {
 public:
 	Client(boost::asio::io_context& io_context, tcp::resolver::results_type& endpoints,
@@ -21,16 +27,19 @@ public:
 	
 	void close() {
 		boost::asio::post(io_context_,  [this](){ socket_.close();});
+		connected_.store(false);
 	}
 	
 	void setTimer() {
-		timeoutTimer_.expires_from_now(std::chrono::seconds(10));
+		timeoutTimer_.expires_from_now(TIMEOUT_INTERVAL);
 		timeoutTimer_.async_wait([this](const boost::system::error_code& ec) {
 				if (!ec) {
 						if (connected_.load()) {
+							uint32_t timeoutTime = getCurrentTimeStamp();
+								ChatMessage timeoutMessage("timeout", timeoutTime, chat::DataType::SYSTEM);
+							timeoutMessage.setSystemCode(chat::TIMEOUT);
+								write(timeoutMessage, true);
 								std::cerr << "Timeout occurred. Closing connection." << std::endl;
-								socket_.close();
-								connected_.store(false);
 						}
 				}
 		});
@@ -41,7 +50,7 @@ public:
 			setTimer();
 	}
 	
-	void write(const ChatMessage& chatMessage) {
+	void write(const ChatMessage& chatMessage, bool closeAfterWrite = false) {
 		if (!connected_.load()) {
 			startReconnectTimer();
 		}
@@ -51,14 +60,18 @@ public:
 		*dataSize = htonl(*dataSize);
 		
 		boost::asio::async_write(socket_, boost::asio::buffer(dataSize.get(), sizeof(*dataSize)),
-														 [this, sendBytes](boost::system::error_code ec, size_t) {
+														 [this, sendBytes, closeAfterWrite](boost::system::error_code ec, size_t) {
 			if (!ec) {
 				doWrite(sendBytes);
+				if (closeAfterWrite) {
+					std::cout << "im about to close" << std::endl;
+					timeoutTimer_.expires_from_now(std::chrono::seconds(3000));
+					close();
+				}
 			}
 			else {
 					std::cerr << "error in writing " << ec.message() << std::endl;
-					socket_.close();
-					connected_.store(false);
+				close();
 			}
 		});
 	}
@@ -69,8 +82,7 @@ public:
 				std::cout << "send body" << std::endl;
 			} else {
 					std::cerr << "error in writing " << ec.message() << std::endl;
-					socket_.close();
-				connected_.store(false);
+				close();
 			}
 		});
 	}
@@ -89,8 +101,7 @@ public:
 				doRead(ntohl(*networkDataSize));
 			} else {
 				std::cerr << "error in reading header" << std::endl;
-				socket_.close();
-				connected_.store(false);
+				close();
 			}
 		});
 	}
@@ -113,8 +124,7 @@ public:
 				read();
 			} else {
 				std::cerr << "error in reading body" << std::endl;
-				socket_.close();
-				connected_.store(false);
+				close();
 			}
 		});
 	}
@@ -127,8 +137,7 @@ public:
 				read();
 			} else {
 				std::cerr << "error in connection: " << ec.message() << std::endl;
-				socket_.close();
-				connected_.store(false);
+				close();
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 				startReconnectTimer();
 			}
@@ -155,7 +164,8 @@ private:
 	
 	std::atomic<bool> connected_{false};
 	boost::asio::steady_timer timeoutTimer_;
-	boost::asio::steady_timer reconnectTimer_;  // 재연결을 위한 타이머
+	boost::asio::steady_timer reconnectTimer_;
+	static constexpr std::chrono::seconds TIMEOUT_INTERVAL = std::chrono::seconds(10); // timeout 간격
 	static constexpr std::chrono::seconds RECONNECT_INTERVAL = std::chrono::seconds(3); // 재연결 시도 간격
 
 	
@@ -190,9 +200,8 @@ int main(int argc, const char * argv[]) {
 				std::string msg;
 				std::getline(std::cin, msg);
 				
-				std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-				auto duration = now.time_since_epoch();
-				uint32_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+				
+				uint32_t timestamp = getCurrentTimeStamp();
 				
 				ChatMessage chatMessage(nickname, timestamp, chat::DataType::TEXT);
 				chatMessage.setTextMessage(msg);

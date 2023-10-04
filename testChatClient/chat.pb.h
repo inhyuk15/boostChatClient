@@ -58,12 +58,13 @@ namespace chat {
 enum DataType : int {
   TEXT = 0,
   IMAGE = 1,
+  SYSTEM = 2,
   DataType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
   DataType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 };
 bool DataType_IsValid(int value);
 constexpr DataType DataType_MIN = TEXT;
-constexpr DataType DataType_MAX = IMAGE;
+constexpr DataType DataType_MAX = SYSTEM;
 constexpr int DataType_ARRAYSIZE = DataType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DataType_descriptor();
@@ -79,6 +80,31 @@ inline bool DataType_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, DataType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<DataType>(
     DataType_descriptor(), name, value);
+}
+enum SystemCode : int {
+  NONE = 0,
+  TIMEOUT = 1,
+  SystemCode_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  SystemCode_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool SystemCode_IsValid(int value);
+constexpr SystemCode SystemCode_MIN = NONE;
+constexpr SystemCode SystemCode_MAX = TIMEOUT;
+constexpr int SystemCode_ARRAYSIZE = SystemCode_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SystemCode_descriptor();
+template<typename T>
+inline const std::string& SystemCode_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, SystemCode>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function SystemCode_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    SystemCode_descriptor(), enum_t_value);
+}
+inline bool SystemCode_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, SystemCode* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<SystemCode>(
+    SystemCode_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -210,9 +236,10 @@ class ChatMessage final :
 
   enum : int {
     kUserNameFieldNumber = 1,
-    kImageExtensionFieldNumber = 6,
+    kFileExtensionFieldNumber = 7,
     kTimestampFieldNumber = 2,
     kDataTypeFieldNumber = 3,
+    kSystemCodeFieldNumber = 6,
     kMessageTextFieldNumber = 4,
     kImageDataFieldNumber = 5,
   };
@@ -230,18 +257,18 @@ class ChatMessage final :
   std::string* _internal_mutable_user_name();
   public:
 
-  // string image_extension = 6;
-  void clear_image_extension();
-  const std::string& image_extension() const;
+  // string file_extension = 7;
+  void clear_file_extension();
+  const std::string& file_extension() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_image_extension(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_image_extension();
-  PROTOBUF_NODISCARD std::string* release_image_extension();
-  void set_allocated_image_extension(std::string* image_extension);
+  void set_file_extension(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_file_extension();
+  PROTOBUF_NODISCARD std::string* release_file_extension();
+  void set_allocated_file_extension(std::string* file_extension);
   private:
-  const std::string& _internal_image_extension() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_image_extension(const std::string& value);
-  std::string* _internal_mutable_image_extension();
+  const std::string& _internal_file_extension() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_file_extension(const std::string& value);
+  std::string* _internal_mutable_file_extension();
   public:
 
   // uint32 timestamp = 2;
@@ -260,6 +287,15 @@ class ChatMessage final :
   private:
   ::chat::DataType _internal_data_type() const;
   void _internal_set_data_type(::chat::DataType value);
+  public:
+
+  // .chat.SystemCode system_code = 6;
+  void clear_system_code();
+  ::chat::SystemCode system_code() const;
+  void set_system_code(::chat::SystemCode value);
+  private:
+  ::chat::SystemCode _internal_system_code() const;
+  void _internal_set_system_code(::chat::SystemCode value);
   public:
 
   // string message_text = 4;
@@ -314,9 +350,10 @@ class ChatMessage final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr user_name_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr image_extension_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr file_extension_;
     uint32_t timestamp_;
     int data_type_;
+    int system_code_;
     union ContentUnion {
       constexpr ContentUnion() : _constinit_{} {}
         ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized _constinit_;
@@ -585,54 +622,74 @@ inline void ChatMessage::set_allocated_image_data(std::string* image_data) {
   // @@protoc_insertion_point(field_set_allocated:chat.ChatMessage.image_data)
 }
 
-// string image_extension = 6;
-inline void ChatMessage::clear_image_extension() {
-  _impl_.image_extension_.ClearToEmpty();
+// .chat.SystemCode system_code = 6;
+inline void ChatMessage::clear_system_code() {
+  _impl_.system_code_ = 0;
 }
-inline const std::string& ChatMessage::image_extension() const {
-  // @@protoc_insertion_point(field_get:chat.ChatMessage.image_extension)
-  return _internal_image_extension();
+inline ::chat::SystemCode ChatMessage::_internal_system_code() const {
+  return static_cast< ::chat::SystemCode >(_impl_.system_code_);
+}
+inline ::chat::SystemCode ChatMessage::system_code() const {
+  // @@protoc_insertion_point(field_get:chat.ChatMessage.system_code)
+  return _internal_system_code();
+}
+inline void ChatMessage::_internal_set_system_code(::chat::SystemCode value) {
+  
+  _impl_.system_code_ = value;
+}
+inline void ChatMessage::set_system_code(::chat::SystemCode value) {
+  _internal_set_system_code(value);
+  // @@protoc_insertion_point(field_set:chat.ChatMessage.system_code)
+}
+
+// string file_extension = 7;
+inline void ChatMessage::clear_file_extension() {
+  _impl_.file_extension_.ClearToEmpty();
+}
+inline const std::string& ChatMessage::file_extension() const {
+  // @@protoc_insertion_point(field_get:chat.ChatMessage.file_extension)
+  return _internal_file_extension();
 }
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
-void ChatMessage::set_image_extension(ArgT0&& arg0, ArgT... args) {
+void ChatMessage::set_file_extension(ArgT0&& arg0, ArgT... args) {
  
- _impl_.image_extension_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:chat.ChatMessage.image_extension)
+ _impl_.file_extension_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:chat.ChatMessage.file_extension)
 }
-inline std::string* ChatMessage::mutable_image_extension() {
-  std::string* _s = _internal_mutable_image_extension();
-  // @@protoc_insertion_point(field_mutable:chat.ChatMessage.image_extension)
+inline std::string* ChatMessage::mutable_file_extension() {
+  std::string* _s = _internal_mutable_file_extension();
+  // @@protoc_insertion_point(field_mutable:chat.ChatMessage.file_extension)
   return _s;
 }
-inline const std::string& ChatMessage::_internal_image_extension() const {
-  return _impl_.image_extension_.Get();
+inline const std::string& ChatMessage::_internal_file_extension() const {
+  return _impl_.file_extension_.Get();
 }
-inline void ChatMessage::_internal_set_image_extension(const std::string& value) {
+inline void ChatMessage::_internal_set_file_extension(const std::string& value) {
   
-  _impl_.image_extension_.Set(value, GetArenaForAllocation());
+  _impl_.file_extension_.Set(value, GetArenaForAllocation());
 }
-inline std::string* ChatMessage::_internal_mutable_image_extension() {
+inline std::string* ChatMessage::_internal_mutable_file_extension() {
   
-  return _impl_.image_extension_.Mutable(GetArenaForAllocation());
+  return _impl_.file_extension_.Mutable(GetArenaForAllocation());
 }
-inline std::string* ChatMessage::release_image_extension() {
-  // @@protoc_insertion_point(field_release:chat.ChatMessage.image_extension)
-  return _impl_.image_extension_.Release();
+inline std::string* ChatMessage::release_file_extension() {
+  // @@protoc_insertion_point(field_release:chat.ChatMessage.file_extension)
+  return _impl_.file_extension_.Release();
 }
-inline void ChatMessage::set_allocated_image_extension(std::string* image_extension) {
-  if (image_extension != nullptr) {
+inline void ChatMessage::set_allocated_file_extension(std::string* file_extension) {
+  if (file_extension != nullptr) {
     
   } else {
     
   }
-  _impl_.image_extension_.SetAllocated(image_extension, GetArenaForAllocation());
+  _impl_.file_extension_.SetAllocated(file_extension, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.image_extension_.IsDefault()) {
-    _impl_.image_extension_.Set("", GetArenaForAllocation());
+  if (_impl_.file_extension_.IsDefault()) {
+    _impl_.file_extension_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:chat.ChatMessage.image_extension)
+  // @@protoc_insertion_point(field_set_allocated:chat.ChatMessage.file_extension)
 }
 
 inline bool ChatMessage::has_content() const {
@@ -658,6 +715,11 @@ template <> struct is_proto_enum< ::chat::DataType> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::chat::DataType>() {
   return ::chat::DataType_descriptor();
+}
+template <> struct is_proto_enum< ::chat::SystemCode> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::chat::SystemCode>() {
+  return ::chat::SystemCode_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE

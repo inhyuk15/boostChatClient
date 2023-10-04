@@ -24,9 +24,10 @@ namespace chat {
 PROTOBUF_CONSTEXPR ChatMessage::ChatMessage(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.user_name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.image_extension_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.file_extension_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.timestamp_)*/0u
   , /*decltype(_impl_.data_type_)*/0
+  , /*decltype(_impl_.system_code_)*/0
   , /*decltype(_impl_.content_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_._oneof_case_)*/{}} {}
@@ -41,7 +42,7 @@ struct ChatMessageDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ChatMessageDefaultTypeInternal _ChatMessage_default_instance_;
 }  // namespace chat
 static ::_pb::Metadata file_level_metadata_chat_2eproto[1];
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_chat_2eproto[1];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_chat_2eproto[2];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_chat_2eproto = nullptr;
 
 const uint32_t TableStruct_chat_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -56,7 +57,8 @@ const uint32_t TableStruct_chat_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(pro
   PROTOBUF_FIELD_OFFSET(::chat::ChatMessage, _impl_.data_type_),
   ::_pbi::kInvalidFieldOffsetTag,
   ::_pbi::kInvalidFieldOffsetTag,
-  PROTOBUF_FIELD_OFFSET(::chat::ChatMessage, _impl_.image_extension_),
+  PROTOBUF_FIELD_OFFSET(::chat::ChatMessage, _impl_.system_code_),
+  PROTOBUF_FIELD_OFFSET(::chat::ChatMessage, _impl_.file_extension_),
   PROTOBUF_FIELD_OFFSET(::chat::ChatMessage, _impl_.content_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -68,16 +70,18 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 
 const char descriptor_table_protodef_chat_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\nchat.proto\022\004chat\"\250\001\n\013ChatMessage\022\021\n\tus"
+  "\n\nchat.proto\022\004chat\"\316\001\n\013ChatMessage\022\021\n\tus"
   "er_name\030\001 \001(\t\022\021\n\ttimestamp\030\002 \001(\r\022!\n\tdata"
   "_type\030\003 \001(\0162\016.chat.DataType\022\026\n\014message_t"
-  "ext\030\004 \001(\tH\000\022\024\n\nimage_data\030\005 \001(\014H\000\022\027\n\017ima"
-  "ge_extension\030\006 \001(\tB\t\n\007content*\037\n\010DataTyp"
-  "e\022\010\n\004TEXT\020\000\022\t\n\005IMAGE\020\001b\006proto3"
+  "ext\030\004 \001(\tH\000\022\024\n\nimage_data\030\005 \001(\014H\000\022%\n\013sys"
+  "tem_code\030\006 \001(\0162\020.chat.SystemCode\022\026\n\016file"
+  "_extension\030\007 \001(\tB\t\n\007content*+\n\010DataType\022"
+  "\010\n\004TEXT\020\000\022\t\n\005IMAGE\020\001\022\n\n\006SYSTEM\020\002*#\n\nSyst"
+  "emCode\022\010\n\004NONE\020\000\022\013\n\007TIMEOUT\020\001b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_chat_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_chat_2eproto = {
-    false, false, 230, descriptor_table_protodef_chat_2eproto,
+    false, false, 317, descriptor_table_protodef_chat_2eproto,
     "chat.proto",
     &descriptor_table_chat_2eproto_once, nullptr, 0, 1,
     schemas, file_default_instances, TableStruct_chat_2eproto::offsets,
@@ -96,6 +100,21 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DataType_descriptor() {
   return file_level_enum_descriptors_chat_2eproto[0];
 }
 bool DataType_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SystemCode_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_chat_2eproto);
+  return file_level_enum_descriptors_chat_2eproto[1];
+}
+bool SystemCode_IsValid(int value) {
   switch (value) {
     case 0:
     case 1:
@@ -123,9 +142,10 @@ ChatMessage::ChatMessage(const ChatMessage& from)
   ChatMessage* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.user_name_){}
-    , decltype(_impl_.image_extension_){}
+    , decltype(_impl_.file_extension_){}
     , decltype(_impl_.timestamp_){}
     , decltype(_impl_.data_type_){}
+    , decltype(_impl_.system_code_){}
     , decltype(_impl_.content_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , /*decltype(_impl_._oneof_case_)*/{}};
@@ -139,17 +159,17 @@ ChatMessage::ChatMessage(const ChatMessage& from)
     _this->_impl_.user_name_.Set(from._internal_user_name(), 
       _this->GetArenaForAllocation());
   }
-  _impl_.image_extension_.InitDefault();
+  _impl_.file_extension_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.image_extension_.Set("", GetArenaForAllocation());
+    _impl_.file_extension_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_image_extension().empty()) {
-    _this->_impl_.image_extension_.Set(from._internal_image_extension(), 
+  if (!from._internal_file_extension().empty()) {
+    _this->_impl_.file_extension_.Set(from._internal_file_extension(), 
       _this->GetArenaForAllocation());
   }
   ::memcpy(&_impl_.timestamp_, &from._impl_.timestamp_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.data_type_) -
-    reinterpret_cast<char*>(&_impl_.timestamp_)) + sizeof(_impl_.data_type_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.system_code_) -
+    reinterpret_cast<char*>(&_impl_.timestamp_)) + sizeof(_impl_.system_code_));
   clear_has_content();
   switch (from.content_case()) {
     case kMessageText: {
@@ -173,9 +193,10 @@ inline void ChatMessage::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.user_name_){}
-    , decltype(_impl_.image_extension_){}
+    , decltype(_impl_.file_extension_){}
     , decltype(_impl_.timestamp_){0u}
     , decltype(_impl_.data_type_){0}
+    , decltype(_impl_.system_code_){0}
     , decltype(_impl_.content_){}
     , /*decltype(_impl_._cached_size_)*/{}
     , /*decltype(_impl_._oneof_case_)*/{}
@@ -184,9 +205,9 @@ inline void ChatMessage::SharedCtor(
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.user_name_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.image_extension_.InitDefault();
+  _impl_.file_extension_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.image_extension_.Set("", GetArenaForAllocation());
+    _impl_.file_extension_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   clear_has_content();
 }
@@ -203,7 +224,7 @@ ChatMessage::~ChatMessage() {
 inline void ChatMessage::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.user_name_.Destroy();
-  _impl_.image_extension_.Destroy();
+  _impl_.file_extension_.Destroy();
   if (has_content()) {
     clear_content();
   }
@@ -239,10 +260,10 @@ void ChatMessage::Clear() {
   (void) cached_has_bits;
 
   _impl_.user_name_.ClearToEmpty();
-  _impl_.image_extension_.ClearToEmpty();
+  _impl_.file_extension_.ClearToEmpty();
   ::memset(&_impl_.timestamp_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.data_type_) -
-      reinterpret_cast<char*>(&_impl_.timestamp_)) + sizeof(_impl_.data_type_));
+      reinterpret_cast<char*>(&_impl_.system_code_) -
+      reinterpret_cast<char*>(&_impl_.timestamp_)) + sizeof(_impl_.system_code_));
   clear_content();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -299,13 +320,22 @@ const char* ChatMessage::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
         } else
           goto handle_unusual;
         continue;
-      // string image_extension = 6;
+      // .chat.SystemCode system_code = 6;
       case 6:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 50)) {
-          auto str = _internal_mutable_image_extension();
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
+          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_system_code(static_cast<::chat::SystemCode>(val));
+        } else
+          goto handle_unusual;
+        continue;
+      // string file_extension = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 58)) {
+          auto str = _internal_mutable_file_extension();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "chat.ChatMessage.image_extension"));
+          CHK_(::_pbi::VerifyUTF8(str, "chat.ChatMessage.file_extension"));
         } else
           goto handle_unusual;
         continue;
@@ -377,14 +407,21 @@ uint8_t* ChatMessage::_InternalSerialize(
         5, this->_internal_image_data(), target);
   }
 
-  // string image_extension = 6;
-  if (!this->_internal_image_extension().empty()) {
+  // .chat.SystemCode system_code = 6;
+  if (this->_internal_system_code() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+      6, this->_internal_system_code(), target);
+  }
+
+  // string file_extension = 7;
+  if (!this->_internal_file_extension().empty()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_image_extension().data(), static_cast<int>(this->_internal_image_extension().length()),
+      this->_internal_file_extension().data(), static_cast<int>(this->_internal_file_extension().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "chat.ChatMessage.image_extension");
+      "chat.ChatMessage.file_extension");
     target = stream->WriteStringMaybeAliased(
-        6, this->_internal_image_extension(), target);
+        7, this->_internal_file_extension(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -410,11 +447,11 @@ size_t ChatMessage::ByteSizeLong() const {
         this->_internal_user_name());
   }
 
-  // string image_extension = 6;
-  if (!this->_internal_image_extension().empty()) {
+  // string file_extension = 7;
+  if (!this->_internal_file_extension().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_image_extension());
+        this->_internal_file_extension());
   }
 
   // uint32 timestamp = 2;
@@ -426,6 +463,12 @@ size_t ChatMessage::ByteSizeLong() const {
   if (this->_internal_data_type() != 0) {
     total_size += 1 +
       ::_pbi::WireFormatLite::EnumSize(this->_internal_data_type());
+  }
+
+  // .chat.SystemCode system_code = 6;
+  if (this->_internal_system_code() != 0) {
+    total_size += 1 +
+      ::_pbi::WireFormatLite::EnumSize(this->_internal_system_code());
   }
 
   switch (content_case()) {
@@ -468,14 +511,17 @@ void ChatMessage::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   if (!from._internal_user_name().empty()) {
     _this->_internal_set_user_name(from._internal_user_name());
   }
-  if (!from._internal_image_extension().empty()) {
-    _this->_internal_set_image_extension(from._internal_image_extension());
+  if (!from._internal_file_extension().empty()) {
+    _this->_internal_set_file_extension(from._internal_file_extension());
   }
   if (from._internal_timestamp() != 0) {
     _this->_internal_set_timestamp(from._internal_timestamp());
   }
   if (from._internal_data_type() != 0) {
     _this->_internal_set_data_type(from._internal_data_type());
+  }
+  if (from._internal_system_code() != 0) {
+    _this->_internal_set_system_code(from._internal_system_code());
   }
   switch (from.content_case()) {
     case kMessageText: {
@@ -514,12 +560,12 @@ void ChatMessage::InternalSwap(ChatMessage* other) {
       &other->_impl_.user_name_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.image_extension_, lhs_arena,
-      &other->_impl_.image_extension_, rhs_arena
+      &_impl_.file_extension_, lhs_arena,
+      &other->_impl_.file_extension_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.data_type_)
-      + sizeof(ChatMessage::_impl_.data_type_)
+      PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.system_code_)
+      + sizeof(ChatMessage::_impl_.system_code_)
       - PROTOBUF_FIELD_OFFSET(ChatMessage, _impl_.timestamp_)>(
           reinterpret_cast<char*>(&_impl_.timestamp_),
           reinterpret_cast<char*>(&other->_impl_.timestamp_));
